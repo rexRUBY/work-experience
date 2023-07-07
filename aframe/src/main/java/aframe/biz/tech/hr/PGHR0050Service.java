@@ -1,5 +1,6 @@
 package aframe.biz.tech.hr;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -71,15 +72,26 @@ public class PGHR0050Service extends EgovAbstractServiceImpl {
 		param.put("limitFrom", pager.getLimitFrom());
 		param.put("limitTo", pager.getLimitTo());
 
+		int start = (pageNo - 1) * rowSize;
+		int end = start + rowSize - 1;
 		List<Map> userList = null;
+		List<Map> userListLimit = new ArrayList<>();
+
 		if (Validate.isNotEmpty(initSearchYn)) {
-			userList = PGHR0050ServicePG.findmember(param);
+		    userList = PGHR0050ServicePG.findmember(param);
+		    for (int i = start; i <= end && i < userList.size(); i++) {
+		    	try {
+		        userListLimit.add(userList.get(i));
+		    	} catch (Exception e) {
+		    		//Nothing
+				}
+		    }
 		}
 
 		mv.addObject("pager", pager);
 		mv.addObject("pagerRS", pager.getRowSize()-1);  //선택된 페이지 행 갯수
-		mv.addObject("pageNum", pager.getPageNo());    //선택된 페이지 번호
-		mv.addObject("userList", userList);
+		mv.addObject("pageNum", pager.getPageNo());    //현재 페이지 번호
+		mv.addObject("userList", userListLimit);
 		mv.setViewName("/admin/hr/BD_UIMAS0050");
 
 		return mv;
