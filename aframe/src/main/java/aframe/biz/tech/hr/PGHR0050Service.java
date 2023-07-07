@@ -59,6 +59,10 @@ public class PGHR0050Service extends EgovAbstractServiceImpl {
 
 		int pageNo = MapUtils.getIntValue(rqstMap, "df_curr_page");
 		int rowSize = MapUtils.getIntValue(rqstMap, "df_row_per_page");
+		// 조건이 다르면 무조건 1로 띄우기
+		if (Pager.lastRowSize != rowSize) {
+			pageNo = 1;
+		}
 		String initSearchYn = MapUtils.getString(rqstMap, "init_search_yn");
 
 		int totalRowCnt = 0;
@@ -78,22 +82,23 @@ public class PGHR0050Service extends EgovAbstractServiceImpl {
 		List<Map> userListLimit = new ArrayList<>();
 
 		if (Validate.isNotEmpty(initSearchYn)) {
-		    userList = PGHR0050ServicePG.findmember(param);
-		    for (int i = start; i <= end && i < userList.size(); i++) {
-		    	try {
-		        userListLimit.add(userList.get(i));
-		    	} catch (Exception e) {
-		    		//Nothing
+			userList = PGHR0050ServicePG.findmember(param);
+			for (int i = start; i <= end && i < userList.size(); i++) {
+				try {
+					userListLimit.add(userList.get(i));
+				} catch (Exception e) {
+					// Nothing
 				}
-		    }
+			}
 		}
 
 		mv.addObject("pager", pager);
-		mv.addObject("pagerRS", pager.getRowSize()-1);  //선택된 페이지 행 갯수
-		mv.addObject("pageNum", pager.getPageNo());    //현재 페이지 번호
+		mv.addObject("pagerRS", pager.getRowSize() - 1); // 선택된 페이지 행 갯수
+		mv.addObject("pageNum", pager.getPageNo()); // 현재 페이지 번호
 		mv.addObject("userList", userListLimit);
 		mv.setViewName("/admin/hr/BD_UIMAS0050");
 
+		Pager.lastRowSize = pager.getRowSize();
 		return mv;
 	}
 
@@ -113,8 +118,7 @@ public class PGHR0050Service extends EgovAbstractServiceImpl {
 
 		String adPK = MapUtils.getString(rqstMap, "ad_PK");
 		param.put("adPK", adPK);
-		
-		
+
 		Map<?, ?> userInfo = PGHR0050ServicePG.findUsermember(param);
 
 		ModelAndView mv = new ModelAndView();
@@ -128,7 +132,7 @@ public class PGHR0050Service extends EgovAbstractServiceImpl {
 	public ModelAndView processProgrm(Map<?, ?> rqstMap) throws Exception {
 		HashMap progrmParam = new HashMap();
 		HashMap autoParam = new HashMap();
-		
+
 		// 등록 정보
 		String adPK = MapUtils.getString(rqstMap, "ad_PK"); // 사원번호
 		String adname = MapUtils.getString(rqstMap, "ad_name"); // 이름
@@ -156,10 +160,9 @@ public class PGHR0050Service extends EgovAbstractServiceImpl {
 
 		// 등록, 수정 구분
 		String insert_update = MapUtils.getString(rqstMap, "insert_update");
-		
-		
+
 		try {
-		// 등록
+			// 등록
 			if ("INSERT".equals(insert_update.toUpperCase())) {
 				PGHR0050ServicePG.insertMember(progrmParam);
 			}
@@ -167,7 +170,7 @@ public class PGHR0050Service extends EgovAbstractServiceImpl {
 			else {
 				PGHR0050ServicePG.updatemember(progrmParam);
 			}
-		} catch(Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
